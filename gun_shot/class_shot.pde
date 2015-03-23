@@ -1,49 +1,50 @@
 class shot
 {
-  float r;
-  float a;
-  float b;
-  float t;
+  float rejection;
+  //amount of rejection
+  float incOfReject;
+  float decOfReject;
+  float frame;
 
-  shot(float shr, float sha, float shb, float sht)
+  shot(float shr, float sha, float shb, float shf)
   {
-    r=shr;
-    a=sha;
-    b=shb;
-    t=sht;
+    rejection = shr;
+    incOfReject = sha;
+    decOfReject = shb;
+    frame = shf;
   }
   
   void fire()
   {
-    if(t==0)
+    if(frame==0)
     {
-      r+=a;
-      t+=8;
+      rejection+=incOfReject;
+      frame+=8;
     } else {
-      r-=b;
-      t-=1;
+      rejection-=decOfReject;
+      frame-=1;
     }
   }
 
   void release()
   {
-    t=0;
-    if(r>0)
+    frame=0;
+    if(rejection>0)
     {
-      r-=1;
+      rejection-=1;
     }
   }
 
   void display()
   {
-    if(r>50)
+    if(rejection>50)
     {
-      r=50;
+      rejection=50;
     }
-    line(mouseX-44-r, mouseY, mouseX-11-r, mouseY);
-    line(mouseX+44+r, mouseY, mouseX+11+r, mouseY);
-    line(mouseX, mouseY-44-r, mouseX, mouseY-11-r);
-    line(mouseX, mouseY+44+r, mouseX, mouseY+11+r);
+    line(mouseX-44-rejection, mouseY, mouseX-11-rejection, mouseY);
+    line(mouseX+44+rejection, mouseY, mouseX+11+rejection, mouseY);
+    line(mouseX, mouseY-44-rejection, mouseX, mouseY-11-rejection);
+    line(mouseX, mouseY+44+rejection, mouseX, mouseY+11+rejection);
   }
 }
   
