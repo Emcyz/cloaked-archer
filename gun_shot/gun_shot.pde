@@ -1,10 +1,10 @@
-shot myshot;
+Crosshair myshot;
 
 void setup() {
   size(640, 360);
   noSmooth();
   fill(126);
-  myshot = new shot(0, 12, 1, 0);
+  myshot = new Crosshair(0, 12, 1, 0);
 }
 
 
