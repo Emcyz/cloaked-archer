@@ -1,33 +1,32 @@
-int maxPrev = 10;
-int prev;
+Ball myball = new Ball(50, 10, 0.75, 0.95);
+
+int deleteFreq = 2;
+int delete = deleteFreq;
+
+
 
 void setup()
 {
   size(400,400);
+  frameRate(60);
+  noStroke();
 }
-
-float mainRadius = 20;
-float alpha = 0;
 
 void draw()
 {
+  background(100);
   
-  float radius = mainRadius;
-  
-  fill(255,255,255,alpha);
-  ellipse(mouseX, mouseY, radius, radius);
-  
+  myball.ballDisplay(mouseX, mouseY);
   if(pmouseX != mouseX || pmouseY != mouseY)
   {
-    alpha *= 0.75;
-    radius *= 0.75;
-    fill(255,255,255,alpha);
-    ellipse(pmouseX, pmouseY, radius, radius);
-    
-    prev++;
+    myball.createPrevCircle();
   }
   
-  
+  delete--;
+  if(delete==0)
+  {
+    delete = deleteFreq;
+    
+    myball.deleteCircle();
+  }
 }
-
-
