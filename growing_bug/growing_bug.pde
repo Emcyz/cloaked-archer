@@ -1,161 +1,209 @@
+Bug mybug;
+
+PFont f;
+
 void setup()
 {
   size(500,500);
-  noStroke();
-  frameRate(30);
-  followX[0] = radius/2;
-  followY[0] = radius/2;
+  frameRate(60);
+  
+  mybug = new Bug(20, 1, 3);
+  mybug.makeBugFollow();
+  
+  f = createFont("Arial", 30, true);
 }
 
-int followCircleCount = 1;
-int followCircleInc = 3;
-int[] followX = new int[1000];
-int[] followY = new int[1000];
 
-int basicX = 20;
-int basicY = 20;
-
-int radius = 20;
 int time;
-int feedTime;
 
-boolean left;
-boolean down;
-boolean right = true;
-boolean up;
+int Margin_Turn;
 
-boolean feedExist = false;
+boolean youFail = false;
+boolean getReady = true;
 
 void draw()
 {
-  background(100);
-  
-  fill(255,255,255);
-  ellipse(basicX + radius/2, basicY + radius/2, radius, radius);
-  
-  for(int i = 0; i < followCircleCount; i++)
+  if(getReady)
   {
-    fill(255,255,255);
-    ellipse(followX[i], followY[i], radius, radius);
+    GameStart();
+  }
+  
+  if(!(youFail || getReady))
+  {
+    background(100);
+    noStroke();
+    
+    for(int i = 0; i < 3; i++)
+    {
+      c[i] = 0;
+      s[i] = 0;
+    }
+    
+    mybug.displayBasic();
+    
+    mybug.displayFollow();
+  
+    Margin_Turn++;
+    
+    if(keyPressed)
+    {
+      if((key == 'a' || key == 'A') && Margin_Turn > timeLevel)
+      {
+        mybug.directLeft();
+        Margin_Turn = 0;
+      }
+      
+      if((key == 's' || key == 'S') && Margin_Turn > timeLevel)
+      {
+        mybug.directDown();
+        Margin_Turn = 0;
+      }
+      
+      if((key == 'd' || key == 'D') && Margin_Turn > timeLevel)
+      {
+        mybug.directRight();
+        Margin_Turn = 0;
+      }
+      
+      if((key == 'w' || key == 'W') && Margin_Turn > timeLevel)
+      {
+        mybug.directUp();
+        Margin_Turn = 0;
+      }
+    }
+
+    if(time==timeLevel)
+    {
+      time = 0;
+      
+      mybug.followMove();
+      
+      mybug.move();
+    }
+
+    time++;
+    mybug.feedTimeInc();
+
+    mybug.makeFeed();
+    mybug.displayFeed();
+    mybug.eatFeed();
+    youFail = mybug.isDie();
   }
 
-  
-  if(keyPressed)
+  if(youFail)
   {
-    if((key == 'a' || key == 'A') && !right)
-    {
-      up = false;
-      left = true;
-      down = false;
-      right = false;
-    }
+    fill(255);
+    //rect(width*2/5, height/4, width/5, height/4);//
+    //rect(width/5, height/2, width*3/5, height/4);//
     
-    if((key == 's' || key == 'S') && !up)
-    {
-      up = false;
-      left = false;
-      down = true;
-      right = false;
-    }
+    textFont(f);
+    textAlign(CENTER);
+    text("You Fail", width/2, height/6);
+    text("left Click Anywhere To Restart", width/2, height/2);
     
-    if((key == 'd' || key == 'D') && !left)
+    for(int i = 0; i < 3; i++)
     {
-      up = false;
-      left = false;
-      down = false;
-      right = true;
-    }
-    
-    if((key == 'w' || key == 'W') && !down)
-    {
-      up = true;
-      left = false;
-      down = false;
-      right = false;
+      overBox[i] = false;
     }
   }
   
-  time++;
-  
-  if(time==3)
+  if(mousePressed && youFail)
   {
+    mybug.reset();
     time = 0;
-    
-    for(int i = followCircleCount-1; i >=0; i--)
-    {
-      followX[i+1] = followX[i];
-      followY[i+1] = followY[i];
-    }
-    
-    followX[0] = basicX + radius/2;
-    followY[0] = basicY + radius/2;
-    
-    bugMove();
-  }
-  
-  
-  feedTime++;
-  
-  
-  if(feedExist)
-  {
-    feedTime = 0;
-    displayFeed();
-  }
-  
-  if(feedTime >= 30)
-  {
-    makeFeed();
-    feedExist = true;
-  }
-  
-  if(basicX + radius/2 == feedX * radius + radius/2
-   && basicY + radius/2 == feedY * radius + radius/2
-   && feedExist)
-  {
-    feedExist = false;
-    followCircleCount += followCircleInc;
-    for(int i = followCircleCount - followCircleInc;
-        i < followCircleCount; i++)
-    {
-      followX[i+1] = followX[i];
-      followY[i+1] = followY[i];
-    }
+
+    getReady = true;
+    youFail = false;
   }
 }
 
 int feedX;
 int feedY;
 
-void makeFeed()
+int boxSize = 30;
+int[] dx = new int[3];
+int[] dy = new int[3];
+int[] c = new int[3];
+int[] s = new int[3];
+
+boolean[] overBox = new boolean[3];
+
+void GameStart()
 {
-  feedX = int(random(0, width/radius));
-  feedY = int(random(0, height/radius));
+  background(130);
+
+  if(!mousePressed)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      if(dx[i] - boxSize/2 < mouseX && mouseX < dx[i] + boxSize/2
+      && dy[i] - boxSize/2 < mouseY && mouseY < dy[i] + boxSize/2)
+      {
+        s[i] = 255;
+        overBox[i] = true;
+      } else {
+        s[i] = 0;
+        overBox[i] = false;
+      }
+      c[i] = 0;
+    }
+  }
+  
+  textFont(f);
+  textAlign(CENTER);
+  text("Select Difficulty", width/2, height/5);
+  text("Easy", width/4, height/2);
+  text("Normal", width/2, height/2);
+  text("Hard", width*3/4, height/2);
+  rectMode(CENTER);
+  
+  fill(c[0]);
+  stroke(s[0]);
+  rect(width/4, height*3/7, boxSize, boxSize);
+  dx[0] = width/4;
+  dy[0] = height*3/7;
+  
+  fill(c[1]);
+  stroke(s[1]);
+  rect(width/2, height*3/7, boxSize, boxSize);
+  dx[1] = width/2;
+  dy[1] = height*3/7;
+  
+  fill(c[2]);
+  stroke(s[2]);
+  rect(width*3/4, height*3/7, boxSize, boxSize);
+  dx[2] = width*3/4;
+  dy[2] = height*3/7;
 }
 
-void displayFeed()
+int[] difficulty = {8, 6, 4};
+int timeLevel;
+
+void mousePressed()
 {
-  fill(0,255,0);
-  ellipse(feedX * radius + radius/2, feedY * radius + radius/2,
-  radius, radius);
+  if(getReady)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      if(overBox[i])
+      {
+        c[i] = 150;
+      }
+    }
+  }
 }
 
-void bugMove()
+void mouseReleased()
 {
-  if(up)
+  if(getReady)
   {
-    basicY -= radius;
-  }
-  if(left)
-  {
-    basicX -= radius;
-  }
-  if(down)
-  {
-    basicY += radius;
-  }
-  if(right)
-  {
-    basicX += radius;
+    for(int i = 0; i < 3; i++)
+    {
+      if(overBox[i])
+      {
+        timeLevel = difficulty[i];
+        getReady = false;
+      }
+    }
   }
 }
